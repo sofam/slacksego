@@ -43,7 +43,7 @@ func main() {
 	}
 	scanner := bufio.NewScanner(f)
 
-	megahalIn := make(chan string)
+	megahalIn := make(chan string, 128)
 
 	api := slack.New(s.BotToken, slack.OptionDebug(false),
 		slack.OptionLog(log.New(os.Stdout, "api: ", log.Lshortfile|log.LstdFlags)),
