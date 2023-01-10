@@ -54,10 +54,17 @@ func main() {
 		panic(err)
 	}
 
-	var me string
+	type BotInfo struct {
+		ID    string
+		Name  string
+		BotID string
+	}
+	var me BotInfo
 	for _, user := range users {
 		if user.Profile.ApiAppID != "" && user.Profile.BotID != "" && strings.Contains(s.AppToken, user.Profile.ApiAppID) {
-			me = user.Profile.BotID
+			me.ID = user.ID
+			me.Name = user.Name
+			me.BotID = user.Profile.BotID
 			break
 		}
 	}
@@ -100,18 +107,18 @@ func main() {
 							fmt.Println("This was a username")
 							break
 						}
-						if strings.Contains(ev.Text, me) {
+						if strings.Contains(ev.Text, me.ID) {
 							fmt.Println("This was a mention")
 							msg := FixString(ev.Text)
 							fmt.Println(msg)
 							megahalIn <- msg + "\n"
 							break
 						}
-						if ev.BotID == me {
+						if ev.BotID == me.BotID {
 							fmt.Println("The bot was here!")
 							break
 						}
-						if ev.BotID != me {
+						if ev.BotID != me.BotID {
 							fmt.Println("Normal user, learning!")
 							msg := FixString(ev.Text)
 							fmt.Println(msg)
