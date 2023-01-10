@@ -89,11 +89,6 @@ func main() {
 				case slackevents.CallbackEvent:
 					innerEvent := eventsAPIEvent.InnerEvent
 					switch ev := innerEvent.Data.(type) {
-					case *slackevents.AppMentionEvent:
-						msg := FixString(ev.Text)
-						fmt.Println(msg)
-						megahalIn <- msg + "\n"
-
 					case *slackevents.MemberJoinedChannelEvent:
 						fmt.Printf("user %q joined to channel %q", ev.User, ev.Channel)
 					case *slackevents.MessageEvent:
@@ -103,6 +98,13 @@ func main() {
 						}
 						if strings.HasPrefix(ev.Text, "&lt;") {
 							fmt.Println("This was a username")
+							break
+						}
+						if strings.Contains(ev.Text, me) {
+							fmt.Println("This was a mention")
+							msg := FixString(ev.Text)
+							fmt.Println(msg)
+							megahalIn <- msg + "\n"
 							break
 						}
 						if ev.BotID == me {
