@@ -48,6 +48,20 @@ func main() {
 	api := slack.New(s.BotToken, slack.OptionDebug(false),
 		slack.OptionLog(log.New(os.Stdout, "api: ", log.Lshortfile|log.LstdFlags)),
 		slack.OptionAppLevelToken(s.AppToken))
+
+	users, err := api.GetUsers()
+	if err != nil {
+		panic(err)
+	}
+
+	var me string
+	for _, user := range users {
+		if user.Profile.ApiAppID != "" && user.Profile.BotID != "" && strings.Contains(s.AppToken, user.Profile.ApiAppID) {
+			me = user.Profile.BotID
+			break
+		}
+	}
+
 	client := socketmode.New(api, socketmode.OptionLog(log.New(os.Stdout, "socketmode: ", log.Lshortfile|log.LstdFlags)), socketmode.OptionDebug(false))
 
 	go func() {
@@ -91,11 +105,11 @@ func main() {
 							fmt.Println("This was a username")
 							break
 						}
-						if ev.BotID != "" {
+						if ev.BotID == me {
 							fmt.Println("The bot was here!")
 							break
 						}
-						if ev.BotID == "" {
+						if ev.BotID != me {
 							fmt.Println("Normal user, learning!")
 							msg := FixString(ev.Text)
 							fmt.Println(msg)
