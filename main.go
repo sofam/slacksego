@@ -107,7 +107,7 @@ func main() {
 							fmt.Println("This was a username")
 							break
 						}
-						if strings.Contains(ev.Text, me.ID) {
+						if strings.Contains(ev.Text, fmt.Sprintf("<@%s>", me.ID)) {
 							fmt.Println("This was a mention")
 							msg := FixString(ev.Text)
 							fmt.Println(msg)
