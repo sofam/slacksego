@@ -161,12 +161,10 @@ func main() {
 
 	go func() {
 		for scanner.Scan() {
-			msg := scanner.Text()
-			if strings.HasPrefix(msg, "- ") {
-
-				cleanMsg := strings.Replace(msg, "- ", "", 1)
-				fmt.Println(cleanMsg)
-				_, _, err := api.PostMessage(s.ChatChannel, slack.MsgOptionText(cleanMsg, false))
+			msg := strings.SplitN(scanner.Text(), " - ", 2)
+			if len(msg) == 2 {
+				fmt.Printf("Stdout: '%s'\n", msg[1])
+				_, _, err := api.PostMessage(s.ChatChannel, slack.MsgOptionText(msg[1], false))
 				if err != nil {
 					fmt.Printf("failed posting message: %v", err)
 				}
