@@ -139,17 +139,19 @@ func main() {
 	go func() {
 		fmt.Println("started")
 		for {
-			m.Lock()
 			select {
 			case x := <-megahalIn:
 				fmt.Println("Stdin: " + x)
+				m.Lock()
 				f.WriteString(x)
 				f.Sync()
+				m.Unlock()
 			case <-time.After(30 * time.Second):
+				m.Lock()
 				f.WriteString("#SAVE\n")
 				f.Sync()
+				m.Unlock()
 			}
-			m.Unlock()
 		}
 	}()
 
