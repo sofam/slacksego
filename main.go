@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/creack/pty"
@@ -42,6 +43,7 @@ func main() {
 		panic(err)
 	}
 	scanner := bufio.NewScanner(f)
+	var m sync.Mutex
 
 	megahalIn := make(chan string, 128)
 
@@ -140,11 +142,15 @@ func main() {
 			select {
 			case x := <-megahalIn:
 				fmt.Println("Stdin: " + x)
+				m.Lock()
 				f.WriteString(x)
-				//f.Sync()
+				f.Sync()
+				m.Unlock()
 			case <-time.After(30 * time.Second):
+				m.Lock()
 				f.WriteString("#SAVE\n")
-				//f.Sync()
+				f.Sync()
+				m.Unlock()
 			}
 		}
 	}()
