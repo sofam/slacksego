@@ -8,10 +8,8 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/creack/pty"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -36,14 +34,20 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	fmt.Println(FixString("<uahsd> pikker\nhund"))
-	megahal := exec.Command("./megahal")
 
-	f, err := pty.Start(megahal)
+	megahal := exec.Command("./megahal")
+	stdin, err := megahal.StdinPipe()
 	if err != nil {
 		panic(err)
 	}
-	scanner := bufio.NewScanner(f)
-	var m sync.Mutex
+	stdout, err := megahal.StdoutPipe()
+	if err != nil {
+		panic(err)
+	}
+	if err := megahal.Start(); err != nil {
+		panic(err)
+	}
+	scanner := bufio.NewScanner(stdout)
 
 	megahalIn := make(chan string, 128)
 
@@ -142,15 +146,15 @@ func main() {
 			select {
 			case x := <-megahalIn:
 				fmt.Println("Stdin: " + x)
-				m.Lock()
-				f.WriteString(x)
-				f.Sync()
-				m.Unlock()
+				_, err := stdin.Write([]byte(x))
+				if err != nil {
+					panic(err)
+				}
 			case <-time.After(30 * time.Second):
-				m.Lock()
-				f.WriteString("#SAVE\n")
-				f.Sync()
-				m.Unlock()
+				_, err := stdin.Write([]byte("#SAVE\n"))
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}()
