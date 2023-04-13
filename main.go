@@ -117,6 +117,11 @@ func main() {
 							fmt.Println("This (probably) contained a username")
 							break
 						}
+						if strings.Contains(ev.Text, "http://") || strings.Contains(ev.Text, "https://") {
+							fmt.Println("This was an URL")
+							break
+						}
+
 						if strings.Contains(ev.Text, fmt.Sprintf("<@%s>", me.ID)) {
 							fmt.Println("This was a mention")
 							msg := FixString(ev.Text)
