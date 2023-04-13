@@ -113,8 +113,8 @@ func main() {
 							fmt.Println("This was a quote")
 							break
 						}
-						if strings.HasPrefix(ev.Text, "&lt;") {
-							fmt.Println("This was a username")
+						if strings.Contains(ev.Text, "<@") && strings.Contains(ev.Text, ">") {
+							fmt.Println("This (probably) contained a username")
 							break
 						}
 						if strings.Contains(ev.Text, fmt.Sprintf("<@%s>", me.ID)) {
