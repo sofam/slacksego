@@ -113,15 +113,10 @@ func main() {
 							fmt.Println("This was a quote")
 							break
 						}
-						if strings.Contains(ev.Text, "<@") && strings.Contains(ev.Text, ">") {
-							fmt.Println("This (probably) contained a username")
+						if strings.HasPrefix(ev.Text, "&lt;") {
+							fmt.Println("This was a username")
 							break
 						}
-						if strings.Contains(ev.Text, "http://") || strings.Contains(ev.Text, "https://") {
-							fmt.Println("This was an URL")
-							break
-						}
-
 						if strings.Contains(ev.Text, fmt.Sprintf("<@%s>", me.ID)) {
 							fmt.Println("This was a mention")
 							msg := FixString(ev.Text)
