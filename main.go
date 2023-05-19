@@ -22,9 +22,56 @@ type Specification struct {
 	ChatChannel string
 }
 
+type BotInfo struct {
+	ID    string
+	Name  string
+	BotID string
+}
+
 func FixString(input string) string {
 	reg := regexp.MustCompile("<.*?> |\n")
 	return strings.TrimPrefix(reg.ReplaceAllString(input, " "), " ")
+}
+
+func shouldSkipMessage(ev *slackevents.MessageEvent, me BotInfo) bool {
+	if ev.SubType == "channel_topic" {
+		return true
+	}
+	if strings.HasPrefix(ev.Text, "&gt;") {
+		return true
+	}
+
+	// Regex pattern for Slack usernames.
+	usernamePattern := regexp.MustCompile("<@U[A-Z0-9]+>")
+	usernames := usernamePattern.FindAllString(ev.Text, -1)
+
+	// If the message contains any usernames and none of them are the bot's username, skip the message.
+	if len(usernames) > 0 {
+		containsBotUsername := false
+		containsOtherUsername := false
+		for _, username := range usernames {
+			if username == fmt.Sprintf("<@%s>", me.ID) {
+				containsBotUsername = true
+			} else {
+				containsOtherUsername = true
+			}
+		}
+
+		if !containsBotUsername || containsOtherUsername {
+			return true
+		}
+	}
+
+	// Regex pattern for URLs.
+	urlPattern := regexp.MustCompile(`http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+`)
+	urls := urlPattern.FindAllString(ev.Text, -1)
+
+	// If the message contains any URLs, skip the message.
+	if len(urls) > 0 {
+		return true
+	}
+
+	return false
 }
 
 func main() {
@@ -60,11 +107,6 @@ func main() {
 		panic(err)
 	}
 
-	type BotInfo struct {
-		ID    string
-		Name  string
-		BotID string
-	}
 	var me BotInfo
 	for _, user := range users {
 		if user.Profile.ApiAppID != "" && user.Profile.BotID != "" && strings.Contains(s.AppToken, user.Profile.ApiAppID) {
