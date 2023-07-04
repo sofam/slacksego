@@ -147,16 +147,8 @@ func main() {
 					case *slackevents.MemberJoinedChannelEvent:
 						fmt.Printf("user %q joined to channel %q", ev.User, ev.Channel)
 					case *slackevents.MessageEvent:
-						if ev.SubType == "channel_topic" {
-							fmt.Println("This was a topic change")
-							break
-						}
-						if strings.HasPrefix(ev.Text, "&gt;") {
-							fmt.Println("This was a quote")
-							break
-						}
-						if strings.HasPrefix(ev.Text, "&lt;") {
-							fmt.Println("This was a username")
+						if shouldSkipMessage(ev, me) {
+							fmt.Println("Filtered")
 							break
 						}
 						if strings.Contains(ev.Text, fmt.Sprintf("<@%s>", me.ID)) {
